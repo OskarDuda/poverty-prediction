@@ -224,35 +224,28 @@ def main(directory: str=None, filenames: str=None, to_binarize=True, to_numerate
     if directory is None:
         directory = ''
     if not is_iterable(filenames):
-        names = [filenames]
+        names = [join(directory, filenames)]
     else:
-        names = filenames
+        names = [join(directory, name) for name in filenames]
 
     # Read the csv file
-    # if is_iterable(filenames):
-    #     data = pd.DataFrame([])
     data = pd.DataFrame([])
     for name in names:
         tmp = pd.read_csv(name)
         if 'Target' not in tmp.columns:
             tmp['Target'] = np.nan
         data = pd.concat([tmp, data])
-    # else:
-    #     data = pd.read_csv(join(directory, filenames))
-    #     if 'Target' not in data.columns:
-    #         data['Target'] = np.nan
 
 
     # Shuffle the data and reset the index
-    data = fix_target(data)
-    data = data.sample(frac=1, random_state=17).reset_index()
+    data = data.sample(frac=1, random_state=17).reset_index(drop=True)
     print("Data shuffled")
 
 
     # Split the data into dependent and independent vars and ids
     X: pd.DataFrame = data.drop(['Target', 'Id'], axis=1).copy()
     y: pd.Series = data['Target'].copy()
-    ids: pd.Series = data['Id']
+    ids: pd.Series = data['Id', 'idhogar']
     print("Data split")
 
 
@@ -312,5 +305,6 @@ def main(directory: str=None, filenames: str=None, to_binarize=True, to_numerate
 
         print("Selected {} features".format(len(X.columns)))
 
+    X = X.drop('idhogar', axis=1)
 
     return X, y, ids

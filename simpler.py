@@ -135,7 +135,7 @@ def is_iterable(x):
         return True
 
 
-def main(filenames, directory=None, to_binarize=False, to_select_feats=False):
+def main(filenames, directory=None, to_binarize=False, to_select_feats=False, to_aggregate=False):
     if is_iterable(filenames):
         filenames = filenames[0]
 

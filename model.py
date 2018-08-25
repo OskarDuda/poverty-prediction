@@ -8,21 +8,22 @@ from sklearn.decomposition import PCA
 from sklearn.model_selection import cross_val_score, KFold
 from sklearn.metrics import f1_score
 
-import simpler as pre
+import preprocessing as pre
 
 
 def get_model():
-    model = LGBMClassifier(n_estimators=5000, subsample=0.3, subsample_freq=1, max_bin=100, num_leaves=15,
+    model = LGBMClassifier(n_estimators=800, subsample=0.3, subsample_freq=1, max_bin=100, num_leaves=15,
                            feature_fraction=0.3, bagging_fraction=0.3, bagging_freq=1,
                            objective='binary', unbalanced=True)
     return model
 
 
 def load_data(filename=None):
+    directory = r'/home/oskar/PycharmProjects/Poverty prediction data'
     if filename is None:
         filename = 'train.csv'
     print("Preprocessing data")
-    X, y, ids = pre.main(filenames=[filename], to_binarize=False, to_select_feats=False)
+    X, y, ids = pre.main(filenames=[filename], directory=directory, to_binarize=False, to_select_feats=False, to_aggregate=False)
     return X, y, ids
 
 
@@ -125,10 +126,10 @@ def fix_target(row, reference):
         return row['Target']
 
 def predict(data=None):
+    directory = r'/home/oskar/PycharmProjects/Poverty prediction data'
     train_filename = 'train.csv'
     test_filename = 'test.csv'
     filenames = train_filename
-    print("Preprocessing the data")
     # X, y, ids = pre.main(filenames=filenames)
     # test_idx = y[y.isnull()].index
     # train_idx = y[y.notnull()].index
@@ -136,8 +137,8 @@ def predict(data=None):
     # y_train = y.iloc[train_idx].astype(int)
     # X_test = X.iloc[test_idx]
     # test_ids = ids.iloc[test_idx]
-    X_train, y_train, ids_train = pre.main(filenames=train_filename, to_binarize=False, to_select_feats=False)
-    X_test, y_test, ids_test = pre.main(filenames=test_filename, to_binarize=False, to_select_feats=False)
+    X_train, y_train, ids_train = load_data(train_filename)
+    X_test, y_test, ids_test = load_data(test_filename)
     X_test = X_test[X_train.columns.values]
 
     head_idx = X_train['parentesco1'] == 1
@@ -178,6 +179,5 @@ def export_preds(filename=None):
 
 if __name__ == '__main__':
     print("Script started on: ", time.asctime())
-    X, y, ids = pre.main(filenames=['train.csv'], to_select_feats=True, to_binarize=False, to_aggregate=False)
-    score = validate_dummies(X, y)
+    score=cv_validate2()
     print("Average, cross validated f1 score: {:.2f}".format(100*np.mean(score)))
